@@ -24,9 +24,6 @@ public class CharStats : MonoBehaviour
     public string equippedArm;
     public Sprite charImage;
 
-
-
-
     // Start is called before the first frame update
     void Start()
     {
@@ -48,23 +45,33 @@ public class CharStats : MonoBehaviour
 
     public void AddExp(int expToAdd) {
         currentEXP += expToAdd;
-        if(currentEXP > expToNextLevel[playerLevel]) {
-            currentEXP -= expToNextLevel[playerLevel];
-            playerLevel++;
+        // If the player isn't max level, they can do the level up stuff
+        if(playerLevel < maxLevel) {
+            if(currentEXP > expToNextLevel[playerLevel]) {
 
-            //Determine whether to add Strength or Defense based on odd or even
-            if(playerLevel%2 == 0) {
-                strength++;
-            } else {
-                defence++;
+                currentEXP -= expToNextLevel[playerLevel];
+                playerLevel++;
+
+                //Determine whether to add Strength or Defense based on odd or even
+                if(playerLevel%2 == 0) {
+                    strength++;
+                } else {
+                    defence++;
+                }
+
+                //Different way to increment stats
+                maxHP = Mathf.FloorToInt(maxHP * 1.05f);
+                currentHP = maxHP;
+
+                //Manual entry through Unity
+                maxMP += mpLvlincrease[playerLevel];
+                currentMP = maxMP;
             }
+        } 
 
-            //Different way to increment stats
-            maxHP = Mathf.FloorToInt(maxHP * 1.05f);
-            currentHP = maxHP;
-
-            maxMP += mpLvlincrease[playerLevel];
-            currentMP = maxMP;
+        //runs if they are max level
+        if(playerLevel >= maxLevel) {
+            currentEXP = 0;  
         }
     }
 }
