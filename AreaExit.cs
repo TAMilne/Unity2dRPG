@@ -33,11 +33,13 @@ public class AreaExit : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other) {
         if(other.tag == "Player") {
-
+            
             //load without fade
                 //SceneManager.LoadScene(areaToLoad);
 
             shouldLoadAfterFade = true;
+            GameManager.instance.fadingBetweenAreas = true;
+            
             UIFade.instance.fadeToBlack();
 
             PlayerController.instance.areaTransitionName = areaTransitionName;
