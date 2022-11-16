@@ -14,7 +14,10 @@ public class GameMenu : MonoBehaviour
     public GameObject[] charStatHolder;
 
     public GameObject[] statusButtons;
+    public Text statusName, statusHp, statusMp, statusStr, statusDef, statusWpnEqp, statusWpnPwr, statusArmrEqp, statusArmrPwr, statusExp;
+    public Image statusImage;
 
+    public ItemButton[] itemButtons;
 
 
     // Start is called before the first frame update
@@ -82,9 +85,35 @@ public class GameMenu : MonoBehaviour
     public void OpenStatus() {
         UpdateMainStats();
         //update the information that is shown
+        StatusChar(0);
         for(int i = 0; i < statusButtons.Length; i++) {
             statusButtons[i].SetActive(playerStats[i].gameObject.activeInHierarchy);
+            statusButtons[i].GetComponentInChildren<Text>().text = playerStats[i].charName;
         }
+    }
 
+    public void StatusChar(int selected) {
+        statusName.text = playerStats[selected].charName;
+        statusHp.text = "" + playerStats[selected].currentHP + "/" + playerStats[selected].maxHP;
+        statusMp.text = "" + playerStats[selected].currentMP + "/" + playerStats[selected].maxMP;
+        statusStr.text = playerStats[selected].strength.ToString();
+        statusDef.text = playerStats[selected].defence.ToString();
+        if(playerStats[selected].equippedWpn != "") {
+            statusWpnEqp.text = playerStats[selected].equippedWpn;
+        }
+        statusWpnPwr.text = playerStats[selected].wpnPwr.ToString();
+        if(playerStats[selected].equippedArm != "") {
+            statusArmrEqp.text = playerStats[selected].equippedArm;
+        }
+        statusArmrPwr.text = playerStats[selected].armorPwr.ToString();
+        statusExp.text = (playerStats[selected].expToNextLevel[playerStats[selected].playerLevel] 
+                            - playerStats[selected].currentEXP).ToString();
+        statusImage.sprite = playerStats[selected].charImage;
+    }
+
+    public void ShowItems() {
+        for(int i=0; i<itemButtons.Length; i++) {
+            itemButtons[i].buttonValue = i;
+        }
     }
 }
