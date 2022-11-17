@@ -25,6 +25,8 @@ public class GameMenu : MonoBehaviour
     public GameObject itemCharChoiceMenu;
     public Text[] itemCharChoiceNames;
 
+    public Text goldText;
+
     public static GameMenu instance;
 
 
@@ -68,6 +70,7 @@ public class GameMenu : MonoBehaviour
                 charStatHolder[i].SetActive(false);
             }
         }
+        goldText.text = GameManager.instance.currentGold.ToString() + "g";
     }
 
     public void ToggleWindow(int windowNumber) {
