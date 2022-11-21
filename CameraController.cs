@@ -14,6 +14,12 @@ public class CameraController : MonoBehaviour
     private float halfHeight;
     private float halfWidth;
 
+    public bool smallRoom;
+
+    public int musicToPlay;
+    private bool musicStarted;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,11 +40,18 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        transform.position = new Vector3(target.position.x, target.position.y, transform.position.z);
+        if(!smallRoom) {
+            transform.position = new Vector3(target.position.x, target.position.y, transform.position.z);
 
-        //keep the camera within bounds
-        transform.position= new Vector3(Mathf.Clamp(transform.position.x, bottomLeftLimit.x, topRightLimit.x),
-                                        Mathf.Clamp(transform.position.y, bottomLeftLimit.y, topRightLimit.y),
-                                        transform.position.z);
+            //keep the camera within bounds
+            transform.position= new Vector3(Mathf.Clamp(transform.position.x, bottomLeftLimit.x, topRightLimit.x),
+                                            Mathf.Clamp(transform.position.y, bottomLeftLimit.y, topRightLimit.y),
+                                            transform.position.z);
+        }    
+        
+        if(!musicStarted) {
+            musicStarted = true;
+            AudioManager.instance.PlayBGM(musicToPlay);
+        }
     }
 }

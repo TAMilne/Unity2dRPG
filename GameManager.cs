@@ -148,7 +148,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat("Player_Position_z", PlayerController.instance.transform.position.z);
 
         for(int i = 0; i < playerStats.Length; i++) {
-          if(playerStats[i].activeInHierarchy) {
+          if(playerStats[i].gameObject.activeInHierarchy) {
             PlayerPrefs.SetInt("Player_" + playerStats[i].charName + "_active", 1);
           } else {
             PlayerPrefs.SetInt("Player_" + playerStats[i].charName + "_active", 0);
@@ -175,7 +175,7 @@ public class GameManager : MonoBehaviour
     public void LoadData() {
         PlayerController.instance.transform.position = new Vector3(PlayerPrefs.GetFloat("Player_Position_x"), PlayerPrefs.GetFloat("Player_Position_y"), PlayerPrefs.GetFloat("Player_Position_z"));
         
-        for(int i = 0; i<playerStats.Length; i==) {
+        for(int i = 0; i<playerStats.Length; i++) {
           if(PlayerPrefs.GetInt("Player_" + playerStats[i].charName + "_active") == 0) {
             playerStats[i].gameObject.SetActive(false);
           } else {
@@ -195,8 +195,8 @@ public class GameManager : MonoBehaviour
         }
     
         for(int i = 0; i < itemsHeld.Length; i++) {
-          itemsHeld[i] = PlayerPrefs.SetString("ItemInInventory_" + i,);
-          numberOfItems[i] = PlayerPrefs.SetInt("ItemAmount_" + i);
+          itemsHeld[i] = PlayerPrefs.GetString("ItemInInventory_" + i);
+          numberOfItems[i] = PlayerPrefs.GetInt("ItemAmount_" + i);
         }
     }
 }
