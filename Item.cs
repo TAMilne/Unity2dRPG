@@ -54,6 +54,7 @@ public class Item : MonoBehaviour
             if(affectStr) {
                 selectedChar.strength += amountToChange;
             }
+            GameManager.instance.RemoveItem(itemName);
         }
         
         if(isWeapon) {
@@ -70,6 +71,27 @@ public class Item : MonoBehaviour
             }
             selectedChar.equippedArm = itemName;
             selectedChar.armorPwr = armorStrength;
+        }
+    }
+
+    public void BattleItemUse(int battleCharToUseOn) {
+        BattleChar selectedBattleChar = BattleManager.instance.activeBattlers[battleCharToUseOn];
+
+        if(affectHP)
+        {
+            selectedBattleChar.currentHp += amountToChange;
+
+            if(selectedBattleChar.currentHp > selectedBattleChar.maxHp) {
+                selectedBattleChar.currentHp = selectedBattleChar.maxHp;
+            }
+        }
+
+        if(affectMP) {
+            selectedBattleChar.currentMp += amountToChange;
+
+            if(selectedBattleChar.currentMp > selectedBattleChar.maxMp) {
+                selectedBattleChar.currentMp = selectedBattleChar.maxMp;
+            }
         }
         GameManager.instance.RemoveItem(itemName);
     }

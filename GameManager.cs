@@ -137,7 +137,7 @@ public class GameManager : MonoBehaviour
         }
         GameMenu.instance.ShowItems();
       } else {
-        Debug.LogError("Couldn't find " + itemToDelete);
+          Debug.LogError("Couldn't find " + itemToDelete);
       }
     }
 
