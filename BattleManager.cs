@@ -2,51 +2,60 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class BattleManager : MonoBehaviour
 {
     public static BattleManager instance;
 
+    public int currentTurn;
+    public bool turnWaiting;
     public bool battleActive;
-    public GameObject battleScene;
-    public Transform[] playerPositions;
+    public string selectedItem;
+    public int chanceToFlee = 35;
+    private bool flee;
+    public int rewardXP;
+    public string[] rewardItems;
+    public bool cannotFlee;
 
+    public GameObject battleScene;
+    public GameObject enemyAttackEffect;
+    public GameObject uiButtonsHolder;
+    public GameObject targetMenu;
+    public GameObject magicMenu;
+    public GameObject itemMenu;
+    public GameObject useButton;
+    public GameObject itemUseMenu;
+    public GameObject statsMenu;
+
+    public Transform[] playerPositions;
     public Transform[] enemyPositions;
 
     public BattleChar[] playerPrefabs;
     public BattleChar[] enemyPrefabs;
     public List<BattleChar> activeBattlers = new List<BattleChar>();
 
-    public int currentTurn;
-    public bool turnWaiting;
-
-    public GameObject uiButtonsHolder;
-
     public BattleMove[] movesList;
-    public GameObject enemyAttackEffect;
+
     public DamageNumber damageNumber;
 
     public Text[] playerName, playerHP, playerMP;
+    public Text itemName, itemDescription, useButtonText;
+    public Text[] itemCharChoiceNames;
 
-    public GameObject targetMenu;
     public BattleTargetButton[] targetButtons;
 
-    public GameObject magicMenu;
-
-    public GameObject itemMenu;
     public ItemButton[] itemButtons;
+
     public Item activeItem;
-    public Text itemName, itemDescription, useButtonText;
-    public GameObject itemUseMenu;
-    public string selectedItem;
-    public Text[] itemCharChoiceNames;
+
     public CharStats[] playerStats;
-    public GameObject useButton;
 
     public BattleMagicSelect[] magicButtons;
+
     public BattleNotification battleNotice;
 
-    public int chanceToFlee = 35;
+    public string gameOverScene;
 
     // Start is called before the first frame update
     void Start()
@@ -59,7 +68,7 @@ public class BattleManager : MonoBehaviour
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.T)) {
-            BattleStart(new string[] {"Troglodyte", "Spider", "Wasp", "Turtle"});
+            BattleStart(new string[] {"Troglodyte" , "Spider", "Wasp", "Turtle"}, false);
         }
 
         if(battleActive) {
@@ -79,8 +88,11 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    public void BattleStart(string[] enemiesToSpawn) {
+    public void BattleStart(string[] enemiesToSpawn, bool setCannotFlee) {
         if(!battleActive) {
+
+            cannotFlee=setCannotFlee;
+
             //Battle is now active
             battleActive = true;
 
@@ -180,13 +192,16 @@ public class BattleManager : MonoBehaviour
         if(allEnemiesDead || allPlayersDead) {
             if(allEnemiesDead) {
                 //end battle in victory
+                StartCoroutine(EndBattleCo());
             } else {
                 //end battle in defeat
+                StartCoroutine(GameOverCo());
             }
-
+            /*
             battleScene.SetActive(false);
             GameManager.instance.battleActive = false;
             battleActive = false;
+            */
         } else {
 
             while(activeBattlers[currentTurn].currentHp == 0) {
@@ -329,14 +344,21 @@ public class BattleManager : MonoBehaviour
     }
 
     public void Flee() {
-        int fleeSuccess = Random.Range(0, 100);
-        if(fleeSuccess < chanceToFlee) {
-            battleActive = false;
-            battleScene.SetActive(false);
-        } else {
-            NextTurn();
-            battleNotice.theText.text = "Only cowards flee!";
+        if(cannotFlee) {
+            battleNotice.theText.text = "Cannot flee from powerful foe!";
             battleNotice.Activate();
+        } else {
+           int fleeSuccess = Random.Range(0, 100);
+            if(fleeSuccess < chanceToFlee) {
+                //battleActive = false;
+                //battleScene.SetActive(false);
+                flee = true;
+                StartCoroutine(EndBattleCo());
+            } else {
+                NextTurn();
+                battleNotice.theText.text = "Only cowards flee!";
+                battleNotice.Activate();
+            }
         }
     }
 
@@ -387,5 +409,60 @@ public class BattleManager : MonoBehaviour
         CloseItemCharChoice();
         itemUseMenu.SetActive(false);      
         NextTurn();
+    }
+
+    public IEnumerator EndBattleCo() {
+        battleActive = false;
+        uiButtonsHolder.SetActive(false);
+        targetMenu.SetActive(false);
+        magicMenu.SetActive(false);
+        itemMenu.SetActive(false);
+        statsMenu.SetActive(false);
+
+        yield return new WaitForSeconds(.5f);
+
+        UIFade.instance.fadeToBlack();
+
+        yield return new WaitForSeconds(1.5f);
+
+        //Update GameManager stats from post BattleManager stats
+        //Loop through battlers
+        for(int i = 0; i < activeBattlers.Count; i++) {
+            //If it's a player, update
+            if(activeBattlers[i].isPlayer) {
+                //Loop through game manager stats to find matching player
+                for(int k = 0; k < GameManager.instance.playerStats.Length; k++) {
+                    //Found a match
+                    if(activeBattlers[i].charName == GameManager.instance.playerStats[k].charName) {
+                        GameManager.instance.playerStats[k].currentHP =activeBattlers[i].currentHp;
+                        GameManager.instance.playerStats[k].currentMP =activeBattlers[i].currentMp;
+                    }
+                }
+            }
+            Destroy(activeBattlers[i].gameObject);
+        }
+
+        UIFade.instance.fadeFromBlack();
+        battleScene.SetActive(false);
+        activeBattlers.Clear();
+        currentTurn=0;
+        //GameManager.instance.battleActive = false;
+
+        if(flee) {
+            GameManager.instance.battleActive = false;
+            flee = false;
+        } else {
+            BattleReward.instance.OpenRewardScreen(rewardXP, rewardItems);
+        }
+
+        AudioManager.instance.PlayBGM(FindObjectOfType<CameraController>().musicToPlay);
+    }
+
+    public IEnumerator GameOverCo() {
+        battleActive = false;
+        UIFade.instance.fadeToBlack();
+        battleScene.SetActive(false);
+        yield return new WaitForSeconds(1.5f);
+        SceneManager.LoadScene(gameOverScene);
     }
 }
